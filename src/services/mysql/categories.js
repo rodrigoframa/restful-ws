@@ -17,7 +17,7 @@ const categories = deps => {
         const { connection, errorHandler } = deps
         connection.query('INSERT INTO categories (name) VALUES (?)', [name], (error, results) => {
           if (error) {
-            errorHandler(error, `Falha ao atualizar a categoria ${name}`, reject)
+            errorHandler(error, `Falha ao salvar a categoria ${name}`, reject)
             return false
           }
           resolve({ category: { name, id: results.insertId } })
@@ -28,11 +28,11 @@ const categories = deps => {
       return new Promise((resolve, reject) => {
         const { connection, errorHandler } = deps
         connection.query('UPDATE categories SET name = ? WHERE id = ?', [name, id], (error, results) => {
-          if (error) {
-            errorHandler(error, `Falha ao salvar a categoria ${name}`, reject)
+          if (error || results.aftectedRows) {
+            errorHandler(error, `Falha ao atualizar a categoria ${name}`, reject)
             return false
           }
-          resolve({ category: { name, id: results.insertId } })
+          resolve({ category: { name, id }, affectedRows: results.affectedRows })
         })
       })
     },
@@ -40,11 +40,12 @@ const categories = deps => {
       return new Promise((resolve, reject) => {
         const { connection, errorHandler } = deps
         connection.query('DELETE FROM categories WHERE id = ?', [id], (error, results) => {
-          if (error) {
+          console.log(results, error)
+          if (error || !results.aftectedRows) {
             errorHandler(error, `Falha ao remover a categoria de id ${id}`, reject)
             return false
           }
-          resolve({ message: 'Categoria removida com sucesso!' })
+          resolve({ message: 'Categoria removida com sucesso!', affectedRows: results.affectedRows })
         })
       })
     }
